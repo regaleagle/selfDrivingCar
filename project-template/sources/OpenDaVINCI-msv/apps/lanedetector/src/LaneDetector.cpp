@@ -46,7 +46,6 @@ namespace msv {
         m_hasAttachedToSharedImageMemory(false),
         m_sharedImageMemory(),
         m_image(NULL),
-        m_cameraId(-1),
         m_debug(false) {}
 
     LaneDetector::~LaneDetector() {}
@@ -151,21 +150,9 @@ namespace msv {
     ModuleState::MODULE_EXITCODE LaneDetector::body() {
 	    // Get configuration data.
 	    KeyValueConfiguration kv = getKeyValueConfiguration();
-	    m_cameraId = kv.getValue<int32_t> ("lanedetector.camera_id");
 	    m_debug = kv.getValue<int32_t> ("lanedetector.debug") == 1;
 
-	    bool use_real_camera = true;
-
-	    // Try to open the camera device.
-	    CvCapture *capture = cvCaptureFromCAM(m_cameraId);
-	    if (!capture) {
-		    cerr << "Could not open real camera; falling back to SHARED_IMAGE." << endl;
-		    use_real_camera = false;
-	    }
-
-
         Player *player = NULL;
-
 /*
         // Lane-detector can also directly read the data from file. This might be interesting to inspect the algorithm step-wisely.
         core::io::URL url("file://recorder.rec");
@@ -187,43 +174,25 @@ namespace msv {
 		    bool has_next_frame = false;
 
 		    // Use the shared memory image.
-		    if (!use_real_camera) {
-                Container c;
-                if (player != NULL) {
-			        // Read the next container from file.
-                    c = player->getNextContainerToBeSent();
-                }
-                else {
-			        // Get the most recent available container for a SHARED_IMAGE.
-			        c = getKeyValueDataStore().get(Container::SHARED_IMAGE);
-                }                
-
-			    if (c.getDataType() == Container::SHARED_IMAGE) {
-				    // Example for processing the received container.
-				    has_next_frame = readSharedImage(c);
-			    }
-		    }
+            Container c;
+            if (player != NULL) {
+		        // Read the next container from file.
+                c = player->getNextContainerToBeSent();
+            }
             else {
-			    // Use the real camera.
-			    if (cvGrabFrame(capture)) {
-				    m_image = cvRetrieveFrame(capture);
-				    has_next_frame = true;
-			    }
+		        // Get the most recent available container for a SHARED_IMAGE.
+		        c = getKeyValueDataStore().get(Container::SHARED_IMAGE);
+            }                
+
+		    if (c.getDataType() == Container::SHARED_IMAGE) {
+			    // Example for processing the received container.
+			    has_next_frame = readSharedImage(c);
 		    }
 
 		    // Process the read image.
 		    if (true == has_next_frame) {
 			    processImage();
 		    }
-
-		    if (use_real_camera) {
-			    // Unset m_image only for the real camera to avoid memory leaks.
-			    m_image = NULL;
-		    }
-	    }
-
-	    if (capture != NULL) {
-		    cvReleaseCapture(&capture);
 	    }
 
         OPENDAVINCI_CORE_DELETE_POINTER(player);

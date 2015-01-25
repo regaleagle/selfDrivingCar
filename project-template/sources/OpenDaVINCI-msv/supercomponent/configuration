@@ -35,13 +35,11 @@ supercomponent.pulsetimeack.exclude = cockpit,monitor # List of modules that wil
 #
 # CONFIGURATION FOR LANEDETECTOR
 #
-lanedetector.camera_id = 2  # select here the proper camera
 lanedetector.debug = 1      # set to 0 to disable any windows and further output
 
 
 # CONFIGURATION FOR VCR
 #
-VCR.camera_id = 2  # select here the proper camera
 VCR.debug = 1      # set to 0 to disable any windows and further output
 
 
