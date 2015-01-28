@@ -22,6 +22,7 @@
 
 #include "core/data/Configuration.h"
 #include "core/data/dmcp/PulseMessage.h"
+#include "core/data/dmcp/PulseAckContainersMessage.h"
 #include "core/data/dmcp/ModuleStateMessage.h"
 #include "core/data/dmcp/ModuleExitCodeMessage.h"
 
@@ -46,10 +47,13 @@ namespace core {
                 m_hasDescriptor(),
                 m_pulseAckCondition(),
                 m_hasReceivedPulseAck(false),
+                m_pulseAckContainersCondition(),
+                m_hasReceivedPulseAckContainers(false),
                 m_connectionLostMutex(),
                 m_connectionLost(false),
                 m_stateListener(),
-                m_stateListenerMutex()
+                m_stateListenerMutex(),
+                m_containersToBeTransferredToSupercomponent()
             {
                 m_connection->setContainerListener(this);
                 m_connection->setErrorListener(this);
@@ -88,6 +92,9 @@ namespace core {
             }
 
             void ModuleConnection::pulse_ack(const core::data::dmcp::PulseMessage &pm, const uint32_t &timeout) {
+                // Unfortunately, we cannot prevent code duplication here (cf. pulse_ack_containers)
+                // as in this case, the dependent client module will NOT send its containers to using
+                // this TCP link but via the regular UDP multicast conference.
                 bool connectionLost = true;
 
                 {
@@ -113,7 +120,42 @@ namespace core {
                         }
                     }
                 }
+            }
 
+            vector<core::data::Container> ModuleConnection::pulse_ack_containers(const core::data::dmcp::PulseMessage &pm, const uint32_t &timeout) {
+                // Unfortunately, we cannot prevent code duplication here (cf. pulse_ack)
+                // as in this case, the dependent client module will send all its containers
+                // via this TCP link and NOT via the regular UDP multicast conference.
+
+                // Assume that we don't receive any further containers.
+                m_containersToBeTransferredToSupercomponent.clear();
+
+                bool connectionLost = true;
+                {
+                    Lock l(m_connectionLostMutex);
+                    connectionLost = m_connectionLost;
+                }
+
+                // Only wait for a confirmation from dependent modules when they are still connected.
+                if (!connectionLost) {
+                    {
+                        Lock l(m_pulseAckContainersCondition);
+                        m_hasReceivedPulseAckContainers = false;
+                    }
+
+                    Container c(Container::DMCP_PULSE_MESSAGE, pm);
+                    m_connection->send(c);
+
+                    // Wait for the ACK message from client.
+                    {
+                        Lock l(m_pulseAckContainersCondition);
+                        if (!m_hasReceivedPulseAckContainers) {
+                            m_pulseAckContainersCondition.waitOnSignalWithTimeout(timeout);
+                        }
+                    }
+                }
+
+                return m_containersToBeTransferredToSupercomponent;
             }
 
             void ModuleConnection::nextContainer(Container &container)
@@ -180,6 +222,20 @@ namespace core {
                         break;
                     }
 
+                    case Container::DMCP_PULSE_ACK_CONTAINERS_MESSAGE:
+                    {
+                        Lock l(m_pulseAckContainersCondition);
+                        m_hasReceivedPulseAckContainers = true;
+
+                        // Get containers to be transferred to supercomponent.
+                        PulseAckContainersMessage pac = container.getData<PulseAckContainersMessage>();
+                        m_containersToBeTransferredToSupercomponent = pac.getListOfContainers();
+
+                        m_pulseAckContainersCondition.wakeAll();
+
+                        break;
+                    }
+
                     default:
                     {
                         Lock l(m_stateListenerMutex);
@@ -204,6 +260,12 @@ namespace core {
                 {
                     Lock l(m_pulseAckCondition);
                     m_pulseAckCondition.wakeAll();
+                }
+
+                // Awake any waiting conditions.
+                {
+                    Lock l(m_pulseAckContainersCondition);
+                    m_pulseAckContainersCondition.wakeAll();
                 }
 
                 // Change module's state.

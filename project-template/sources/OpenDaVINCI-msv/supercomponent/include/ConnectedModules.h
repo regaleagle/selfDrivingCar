@@ -21,8 +21,11 @@
 #ifndef SUPERCOMPONENT_CONNECTEDMODULES_H_
 #define SUPERCOMPONENT_CONNECTEDMODULES_H_
 
+#include <vector>
+
 #include "core/base/ModuleState.h"
 #include "core/base/Mutex.h"
+#include "core/data/Container.h"
 #include "core/data/dmcp/PulseMessage.h"
 #include "core/data/dmcp/ModuleDescriptor.h"
 #include "core/data/dmcp/ModuleDescriptorComparator.h"
@@ -71,6 +74,19 @@ namespace supercomponent {
              * @param modulesToIgnore Modules that are skipped when sending the pulse signal.
              */
             void pulse_ack(const core::data::dmcp::PulseMessage &pm, const uint32_t &timeout, const uint32_t &yield, const vector<string> &modulesToIgnore);
+
+            /**
+             * This method sends a pulse to all connected modules and
+             * requires an ACK confirmation sent from the respective,
+             * dependent module that the PULSE has been processed.
+             *
+             * @param pm Pulse to be sent.
+             * @param timeout Timeout in milliseconds to wait for an ACK from the dependent module.
+             * @param yield Time to wait in microseconds before sending the pulse to the next module in the list.
+             * @param modulesToIgnore Modules that are skipped when sending the pulse signal.
+             * @return Containers to be transferred to supercomponent.
+             */
+            vector<core::data::Container> pulse_ack_containers(const core::data::dmcp::PulseMessage &pm, const uint32_t &timeout, const uint32_t &yield, const vector<string> &modulesToIgnore);
 
             void deleteAllModules();
 

@@ -38,6 +38,11 @@ namespace core {
             m_containerListener = cl;
         }
 
+        ContainerListener* ContainerConference::getContainerListener() {
+            Lock l(m_containerListenerMutex);
+            return m_containerListener;
+        }
+
         bool ContainerConference::hasContainerListener() const {
             bool hasListener = false;
             {

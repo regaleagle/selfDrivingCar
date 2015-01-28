@@ -26,6 +26,7 @@
 #include "core/data/Configuration.h"
 #include "core/data/TimeStamp.h"
 #include "core/data/dmcp/PulseAckMessage.h"
+#include "core/data/dmcp/PulseAckContainersMessage.h"
 #include "core/data/dmcp/ModuleExitCodeMessage.h"
 #include "core/data/dmcp/ModuleStateMessage.h"
 #include "core/data/dmcp/ModuleDescriptor.h"
@@ -120,6 +121,13 @@ namespace core {
 
             void Client::sendPulseAck() {
                 Container container(Container::DMCP_PULSE_ACK_MESSAGE, PulseAckMessage());
+                m_connection.send(container);
+            }
+
+            void Client::sendPulseAckContainers(const vector<core::data::Container> &listOfContainers) {
+                PulseAckContainersMessage pac;
+                pac.setListOfContainers(listOfContainers);
+                Container container(Container::DMCP_PULSE_ACK_CONTAINERS_MESSAGE, pac);
                 m_connection.send(container);
             }
 

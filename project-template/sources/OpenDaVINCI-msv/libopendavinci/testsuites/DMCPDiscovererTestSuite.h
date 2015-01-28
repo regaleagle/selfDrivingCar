@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "mocks/FunctionCallWaiter.h"
 
@@ -42,8 +43,8 @@ using namespace core::data::dmcp;
 class TestClient : public core::dmcp::discoverer::Client
 {
     public:
-        TestClient(const string& group, const uint32_t serverPort, const uint32_t clientPort) :
-            Client(group, serverPort, clientPort),
+        TestClient(const string& group, const uint32_t &serverPort, const uint32_t &clientPort, const string &name) :
+            Client(group, serverPort, clientPort, name),
             WAITER()
         {}
 
@@ -58,8 +59,8 @@ class TestServer : public core::dmcp::discoverer::Server
 {
     public:
         TestServer(const ServerInformation& serverInformation,
-                   const std::string& group, const uint32_t serverPort, const uint32_t clientPort) :
-           Server(serverInformation, group, serverPort, clientPort),
+                   const std::string& group, const uint32_t &serverPort, const uint32_t &clientPort, const vector<string> &modulesToIgnore) :
+           Server(serverInformation, group, serverPort, clientPort, modulesToIgnore),
            WAITER()
         {};
 
@@ -78,10 +79,11 @@ class DMCPDiscovererTestsuite : public CxxTest::TestSuite
             //DMCPConfig::TEST_GROUP
             clog << endl << "DMCPDiscovererTestsuite::testClient" << endl;
             
+            vector<string> noModulesToIgnore;
             ServerInformation myServerInfo("0.0.0.0", 12345);
-            TestServer server(myServerInfo, DMCPConfig_TEST_GROUP, DMCPConfig_TEST_SERVERPORT, DMCPConfig_TEST_CLIENTPORT );
+            TestServer server(myServerInfo, DMCPConfig_TEST_GROUP, DMCPConfig_TEST_SERVERPORT, DMCPConfig_TEST_CLIENTPORT, noModulesToIgnore);
 
-            TestClient client(DMCPConfig_TEST_GROUP, DMCPConfig_TEST_SERVERPORT, DMCPConfig_TEST_CLIENTPORT );
+            TestClient client(DMCPConfig_TEST_GROUP, DMCPConfig_TEST_SERVERPORT, DMCPConfig_TEST_CLIENTPORT, "myName");
             TS_ASSERT( !client.existsServer() );
             TS_ASSERT( !client.WAITER.wasCalled() );
             TS_ASSERT( !server.WAITER.wasCalled() );

@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include <GL/gl.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
@@ -291,8 +291,16 @@ namespace camgen {
     }
 
     ModuleState::MODULE_EXITCODE CamGen::body() {
-        // The following call never returns!
-        glutMainLoop();
+        while (getModuleState() == ModuleState::RUNNING) {
+            // Trigger event processing.
+            glutMainLoopEvent();
+
+            // Trigger a repaint event.
+            glutPostRedisplay();
+        }
+
+        // Leave glut main loop.
+        glutLeaveMainLoop();
 
         return ModuleState::OKAY;
     }

@@ -39,13 +39,15 @@ namespace core {
             using namespace data::dmcp;
 
             Client::Client(const string& group,
-                           const uint32_t serverPort,
-                           const uint32_t clientPort ) :
+                           const uint32_t &serverPort,
+                           const uint32_t &clientPort,
+                           const string &name) :
                     m_sender(core::wrapper::UDPFactory::createUDPSender(group, serverPort)),
                     m_receiver(core::wrapper::UDPFactory::createUDPReceiver(group, clientPort)),
                     m_responseCondition(),
                     m_response(false),
-                    m_serverInformation() {
+                    m_serverInformation(),
+                    m_moduleName(name) {
                 m_receiver->setPacketListener(this);
                 m_receiver->start();
             }
@@ -71,7 +73,7 @@ namespace core {
 
             void Client::sendDiscoverMessage() {
                 Container discover = Container(Container::DMCP_DISCOVER,
-                                               DiscoverMessage(DiscoverMessage::DISCOVER));
+                                               DiscoverMessage(DiscoverMessage::DISCOVER, m_moduleName));
                 stringstream ss;
                 ss << discover;
 

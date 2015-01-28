@@ -25,6 +25,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "core/base/Lock.h"
 #include "core/base/Service.h"
@@ -162,11 +164,13 @@ class ConferenceClientModuleTest : public CxxTest::TestSuite,
             m_configuration = KeyValueConfiguration();
             sstr >> m_configuration;
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.101",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);

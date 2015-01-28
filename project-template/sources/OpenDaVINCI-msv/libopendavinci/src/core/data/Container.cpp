@@ -201,6 +201,8 @@ namespace core {
                     return "DMCP_PULSE_MESSAGE";
                 case DMCP_PULSE_ACK_MESSAGE:
                     return "DMCP_PULSE_ACK_MESSAGE";
+                case DMCP_PULSE_ACK_CONTAINERS_MESSAGE:
+                    return "DMCP_PULSE_ACK_CONTAINERS_MESSAGE";
                 case USER_DATA_0:
                     return "UserData_0";
                 case USER_DATA_1:

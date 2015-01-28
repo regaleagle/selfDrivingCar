@@ -75,7 +75,8 @@ namespace core {
                     SharedPointer<discoverer::Client>(
                             new discoverer::Client(getMultiCastGroup(),
                                                    BROADCAST_PORT_SERVER,
-                                                   BROADCAST_PORT_CLIENT));
+                                                   BROADCAST_PORT_CLIENT,
+                                                   getName()));
 
                 bool supercomponentFound = false;
                 uint32_t attempt  = 0;

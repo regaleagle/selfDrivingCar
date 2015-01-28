@@ -20,6 +20,8 @@
 #ifndef OPENDAVINCI_DMCP_CONNECTION_MODULECONNECTION_H_
 #define OPENDAVINCI_DMCP_CONNECTION_MODULECONNECTION_H_
 
+#include <vector>
+
 // core/platform.h must be included to setup platform-dependent header files and configurations.
 #include "core/platform.h"
 
@@ -30,6 +32,7 @@
 #include "core/io/ConnectionErrorListener.h"
 #include "core/io/ContainerListener.h"
 
+#include "core/data/Container.h"
 #include "core/data/dmcp/ModuleDescriptor.h"
 #include "core/data/dmcp/PulseMessage.h"
 #include "core/dmcp/ModuleConfigurationProvider.h"
@@ -40,7 +43,7 @@ namespace core {
         namespace connection {
 
             class OPENDAVINCI_API ModuleConnection : protected core::io::ConnectionErrorListener,
-                                                  protected core::io::ContainerListener
+                                                     protected core::io::ContainerListener
             {
                 private:
                     /**
@@ -83,6 +86,20 @@ namespace core {
                      */
                     void pulse_ack(const core::data::dmcp::PulseMessage &pm, const uint32_t &timeout);
 
+                    /**
+                     * This method sends a pulse to the connected module and
+                     * requires an ACK confirmation sent from the respective,
+                     * dependent module that the PULSE has been processed. In
+                     * addition to the original pulse_ack method, this one
+                     * also receives all newly created containers from the
+                     * dependent module to be transferred to supercomponent.
+                     *
+                     * @param pm Pulse to be sent.
+                     * @param timeout Timeout in milliseconds to wait for the ACK message.
+                     * @return Containers to be transferred to supercomponent.
+                     */
+                    vector<core::data::Container> pulse_ack_containers(const core::data::dmcp::PulseMessage &pm, const uint32_t &timeout);
+
                     const core::data::dmcp::ModuleDescriptor getModuleDescriptor() const;
 
                 protected:
@@ -99,11 +116,16 @@ namespace core {
                     core::base::Condition m_pulseAckCondition;
                     bool m_hasReceivedPulseAck;
 
+                    core::base::Condition m_pulseAckContainersCondition;
+                    bool m_hasReceivedPulseAckContainers;
+
                     core::base::Mutex m_connectionLostMutex;
                     bool m_connectionLost;
 
                     ModuleStateListener* m_stateListener;
                     core::base::Mutex m_stateListenerMutex;
+
+                    vector<core::data::Container> m_containersToBeTransferredToSupercomponent;
             };
         }
     }

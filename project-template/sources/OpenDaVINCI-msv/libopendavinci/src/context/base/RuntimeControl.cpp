@@ -88,7 +88,6 @@ namespace context {
 
                 if (takeControl == RuntimeControl::TAKE_CONTROL) {
                     clog << "(context::base::RuntimeControl) Taking control..." << endl;
-
                     // Exchange TimeFactory.
                     removeExistingTimeFactory();
                     m_controlledTimeFactory = new ControlledTimeFactory();

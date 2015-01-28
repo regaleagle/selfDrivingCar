@@ -94,7 +94,8 @@ namespace supercomponent {
         m_discovererServer = new discoverer::Server(serverInformation,
 													getMultiCastGroup(),
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    m_modulesToIgnore);
         m_discovererServer->startResponding();
 
         cout << "(supercomponent) Creating connection server..." << endl;
@@ -152,8 +153,16 @@ namespace supercomponent {
             if (core::StringToolbox::equalsIgnoreCase(managedLevel, "pulse_time")) {
                 m_managedLevel = core::dmcp::ServerInformation::ML_PULSE_TIME;
             }
-            if (core::StringToolbox::equalsIgnoreCase(managedLevel, "pulse_time_ack")) {
-                m_managedLevel = core::dmcp::ServerInformation::ML_PULSE_TIME_ACK;
+            if (core::StringToolbox::equalsIgnoreCase(managedLevel, "pulse_time_ack") || core::StringToolbox::equalsIgnoreCase(managedLevel, "simulation") || core::StringToolbox::equalsIgnoreCase(managedLevel, "simulation_rt")) {
+                if (core::StringToolbox::equalsIgnoreCase(managedLevel, "pulse_time_ack")) {
+                    m_managedLevel = core::dmcp::ServerInformation::ML_PULSE_TIME_ACK;
+                }
+                if (core::StringToolbox::equalsIgnoreCase(managedLevel, "simulation")) {
+                    m_managedLevel = core::dmcp::ServerInformation::ML_SIMULATION;
+                }
+                if (core::StringToolbox::equalsIgnoreCase(managedLevel, "simulation_rt")) {
+                    m_managedLevel = core::dmcp::ServerInformation::ML_SIMULATION_RT;
+                }
 
                 m_timeoutACKMilliseconds = 1000;
                 m_yieldMicroseconds = 5 * 1000;
@@ -187,9 +196,11 @@ namespace supercomponent {
     }
 
     void SuperComponent::checkForSuperComponent() {
+        string noName = "";
         discoverer::Client discovererClient(getMultiCastGroup(),
                                             BROADCAST_PORT_SERVER,
-                                            BROADCAST_PORT_CLIENT);
+                                            BROADCAST_PORT_CLIENT,
+                                            noName);
 
          if ( discovererClient.existsServer() ) {
              cout << "(supercomponent) supercomponent already running for " << getMultiCastGroup() << endl;
@@ -200,6 +211,8 @@ namespace supercomponent {
     ModuleState::MODULE_EXITCODE SuperComponent::body() {
         uint32_t cumulatedTimeSlice = 0;
         const long ONE_SECOND_IN_MICROSECONDS = 1000 * 1000 * 1;
+
+        vector<Container> containersToBeDistributedToModules;
 
         m_lastCycle = TimeStamp();
         while (getModuleState() == ModuleState::RUNNING) {
@@ -224,7 +237,9 @@ namespace supercomponent {
             else if ( (m_managedLevel == core::dmcp::ServerInformation::ML_PULSE) ||
                       (m_managedLevel == core::dmcp::ServerInformation::ML_PULSE_SHIFT) ||
                       (m_managedLevel == core::dmcp::ServerInformation::ML_PULSE_TIME) ||
-                      (m_managedLevel == core::dmcp::ServerInformation::ML_PULSE_TIME_ACK) ) {
+                      (m_managedLevel == core::dmcp::ServerInformation::ML_PULSE_TIME_ACK) ||
+                      (m_managedLevel == core::dmcp::ServerInformation::ML_SIMULATION) ||
+                      (m_managedLevel == core::dmcp::ServerInformation::ML_SIMULATION_RT) ) {
 
                 const float FREQ = getFrequency();
                 const long TIME_CONSUMPTION_OF_CURRENT_SLICE = (current.toMicroseconds() - m_lastCycle.toMicroseconds()) - m_lastWaitTime;
@@ -258,6 +273,33 @@ namespace supercomponent {
                     // on the OS level.
                     m_modules.pulse_ack(pm, m_timeoutACKMilliseconds, m_yieldMicroseconds, m_modulesToIgnore);
                 }
+                else if ( (m_managedLevel == core::dmcp::ServerInformation::ML_SIMULATION) || (m_managedLevel == core::dmcp::ServerInformation::ML_SIMULATION_RT) ) {
+                    // Managed level ML_SIMULATION requires a confirmation from the dependent
+                    // modules that the received PULSE has been processed and the connected modules need
+                    // to return all Containers to be distributed to the connected modules in the next
+                    // call cycle.
+                    //
+                    // m_yieldMicroseconds specifies the amount of time that we are going to wait before
+                    // we trigger the next module (send the pulse to it) to allow delivery of any packets
+                    // on the OS level.
+
+                    // Set containers to be delivered to the connected modules.
+                    pm.setListOfContainers(containersToBeDistributedToModules);
+
+                    // Replicate containers to real UDP conference for modules that are excluded from the ML.
+                    vector<Container>::iterator it = containersToBeDistributedToModules.begin();
+                    while (it != containersToBeDistributedToModules.end()) {
+                        m_conference->send(*it);
+                        it++;
+                        Thread::usleep(500);
+                    }
+
+                    // Clear containers from last cycle.
+                    containersToBeDistributedToModules.clear();
+
+                    // Save containers to be distributed in the next cycle.
+                    containersToBeDistributedToModules = m_modules.pulse_ack_containers(pm, m_timeoutACKMilliseconds, m_yieldMicroseconds, m_modulesToIgnore);
+                }
 
                 // Increment the nomimal time slices.
                 cumulatedTimeSlice = (cumulatedTimeSlice + NOMINAL_DURATION_OF_ONE_SLICE) % ONE_SECOND_IN_MICROSECONDS;
@@ -267,7 +309,15 @@ namespace supercomponent {
                     WAITING_TIME_OF_CURRENT_SLICE = 0;
                 }
                 m_lastWaitTime = WAITING_TIME_OF_CURRENT_SLICE;
-                Thread::usleep(WAITING_TIME_OF_CURRENT_SLICE);
+
+                // Check if we really need to artificially consume this time slice in real time or if we can run as fast as possible.
+                if (m_managedLevel == core::dmcp::ServerInformation::ML_SIMULATION) {
+                    // We can run as fast as possible but we need to allow some scheduling for the connected modules.
+                    Thread::usleep(1000);
+                }
+                else {
+                    Thread::usleep(WAITING_TIME_OF_CURRENT_SLICE);
+                }
             }
         }
 

@@ -71,6 +71,9 @@ namespace core {
          *                TimeStamp ts = c.getData<TimeStamp>();
          *
          *                // Do something...
+         *
+         *                Container c2(Container::TIMESTAMP, TimeStamp());
+         *                getConference().send(c2);
          *            }
          *
          *            return ModuleState::OKAY;
@@ -139,7 +142,7 @@ namespace core {
                 virtual core::base::KeyValueDataStore& getKeyValueDataStore();
 
             private:
-                core::io::ContainerConference *m_conference;
+                void setupContainerConference();
 
                 // Distribute input data using thread-safe data stores.
                 core::base::Mutex m_dataStoresMutex;

@@ -69,6 +69,7 @@ namespace core {
 
                     DMCP_PULSE_MESSAGE           = 101,
                     DMCP_PULSE_ACK_MESSAGE       = 102,
+                    DMCP_PULSE_ACK_CONTAINERS_MESSAGE = 103,
 
                     USER_BUTTON                  = 999,
                     USER_DATA_0                  = 1000,

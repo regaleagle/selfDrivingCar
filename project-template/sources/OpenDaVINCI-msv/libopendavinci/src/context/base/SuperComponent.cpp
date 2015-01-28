@@ -45,7 +45,8 @@ namespace context {
 
             clog << "(context::base::SuperComponent) Server information: " << serverInformation.toString() << endl;
             clog << "(context::base::SuperComponent) Creating discoverer server..." << endl;
-            m_discovererServer = new discoverer::Server(serverInformation, multicastGroup, BROADCAST_PORT_SERVER, BROADCAST_PORT_CLIENT);
+            vector<string> noModulesToIgnore;
+            m_discovererServer = new discoverer::Server(serverInformation, multicastGroup, BROADCAST_PORT_SERVER, BROADCAST_PORT_CLIENT, noModulesToIgnore);
             m_discovererServer->startResponding();
 
             clog << "(context::base::SuperComponent) Creating connection server..." << endl;

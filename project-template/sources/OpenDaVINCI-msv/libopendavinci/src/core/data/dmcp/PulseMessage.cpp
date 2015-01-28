@@ -1,6 +1,6 @@
 /**
  * OpenDaVINCI - Portable middleware for distributed components.
- * Copyright (C) 2008 - 2015 Christian Berger, Bernhard Rumpe
+ * Copyright (C) 2014 - 2015 Christian Berger
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,23 +34,27 @@ namespace core {
             PulseMessage::PulseMessage() :
                 m_realTimeFromSupercomponent(),
                 m_nominalTimeSlice(0),
-                m_cumulatedTimeSlice(0) {}
+                m_cumulatedTimeSlice(0),
+                m_listOfContainers() {}
 
             PulseMessage::PulseMessage(const core::data::TimeStamp &ts, const uint32_t &nominalTimeSlice, const uint32_t &cumulatedTimeSlice) :
                 m_realTimeFromSupercomponent(ts),
                 m_nominalTimeSlice(nominalTimeSlice),
-                m_cumulatedTimeSlice(cumulatedTimeSlice) {}
+                m_cumulatedTimeSlice(cumulatedTimeSlice),
+                m_listOfContainers() {}
 
             PulseMessage::PulseMessage(const PulseMessage &obj) :
                 SerializableData(obj),
                 m_realTimeFromSupercomponent(obj.m_realTimeFromSupercomponent),
                 m_nominalTimeSlice(obj.m_nominalTimeSlice),
-                m_cumulatedTimeSlice(obj.m_cumulatedTimeSlice) {}
+                m_cumulatedTimeSlice(obj.m_cumulatedTimeSlice),
+                m_listOfContainers(obj.m_listOfContainers) {}
 
             PulseMessage& PulseMessage::operator=(const PulseMessage &obj) {
                 m_realTimeFromSupercomponent = obj.m_realTimeFromSupercomponent;
                 m_nominalTimeSlice = obj.m_nominalTimeSlice;
                 m_cumulatedTimeSlice = obj.m_cumulatedTimeSlice;
+                m_listOfContainers = obj.m_listOfContainers;
 
                 return *this;
             }
@@ -81,6 +85,19 @@ namespace core {
                 return m_realTimeFromSupercomponent;
             }
 
+            void PulseMessage::addContainer(const Container &c) {
+                m_listOfContainers.push_back(c);
+            }
+
+            void PulseMessage::setListOfContainers(const vector<core::data::Container> &l) {
+                m_listOfContainers.clear();
+                m_listOfContainers = l;
+            }
+
+            vector<Container> PulseMessage::getListOfContainers() const {
+                return m_listOfContainers;
+            }
+
             const string PulseMessage::toString() const {
                 stringstream sstr;
                 sstr << "Real time from supercomponent: " << m_realTimeFromSupercomponent.toString() << ", " << "nominal time slice: " << m_nominalTimeSlice << ", " << "cumulated time slice: " << m_cumulatedTimeSlice;
@@ -95,6 +112,15 @@ namespace core {
                 s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL7('n', 'o', 'm', 'i', 'n', 'a', 'l') >::RESULT, m_nominalTimeSlice);
                 s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL8('c', 'u', 'm', 'u', 'l', 'a', 't', 'd') >::RESULT, m_cumulatedTimeSlice);
 
+                const uint32_t numberOfContainersToBeTransferred = m_listOfContainers.size();
+                s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL7('n', 'u', 'm', 'c', 'o', 'n', 't') >::RESULT, numberOfContainersToBeTransferred);
+
+                stringstream sstr;
+                for (uint32_t i = 0; i < numberOfContainersToBeTransferred; i++) {
+                    sstr << m_listOfContainers.at(i);
+                }
+                s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL5('c', 'o', 'n', 't', 's') >::RESULT, sstr.str());
+
                 return out;
             }
 
@@ -105,6 +131,21 @@ namespace core {
                 d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('r', 't', 's', 'c') >::RESULT, m_realTimeFromSupercomponent);
                 d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL7('n', 'o', 'm', 'i', 'n', 'a', 'l') >::RESULT, m_nominalTimeSlice);
                 d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL8('c', 'u', 'm', 'u', 'l', 'a', 't', 'd') >::RESULT, m_cumulatedTimeSlice);
+
+                uint32_t numberOfContainersToBeTransferred = 0;
+                d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL7('n', 'u', 'm', 'c', 'o', 'n', 't') >::RESULT, numberOfContainersToBeTransferred);
+
+                if (numberOfContainersToBeTransferred > 0) {
+                    string s;
+                    d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL5('c', 'o', 'n', 't', 's') >::RESULT, s);
+
+                    stringstream sstr(s);
+                    for (uint32_t i = 0; i < numberOfContainersToBeTransferred; i++) {
+                        Container c;
+                        sstr >> c;
+                        addContainer(c);
+                    }
+                }
 
                 return in;
             }

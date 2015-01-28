@@ -32,17 +32,20 @@ namespace core {
 
             DiscoverMessage::DiscoverMessage() :
                 m_type(UNDEFINED),
-                m_serverInformation()
+                m_serverInformation(),
+                m_moduleName("")
             {}
 
-            DiscoverMessage::DiscoverMessage(TYPE type) :
+            DiscoverMessage::DiscoverMessage(TYPE type, const string &name) :
                 m_type(type),
-                m_serverInformation()
+                m_serverInformation(),
+                m_moduleName(name)
             {}
 
             DiscoverMessage::DiscoverMessage(TYPE type, const core::dmcp::ServerInformation& serverInformation) :
                 m_type(type),
-                m_serverInformation(serverInformation)
+                m_serverInformation(serverInformation),
+                m_moduleName("")
             {}
 
             DiscoverMessage::~DiscoverMessage() {}
@@ -54,6 +57,7 @@ namespace core {
                 uint32_t type = m_type;
                 s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('t', 'y', 'p', 'e') >::RESULT, type);
                 s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('i', 'f', 'n', 'o') >::RESULT, m_serverInformation);
+                s.write(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('n', 'a', 'm', 'e') >::RESULT, m_moduleName);
 
                 return out;
             }
@@ -65,9 +69,15 @@ namespace core {
                 uint32_t type = 0;
                 d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('t', 'y', 'p', 'e') >::RESULT, type);
                 m_type = static_cast<DiscoverMessage::TYPE>(type);
+
                 d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('i', 'f', 'n', 'o') >::RESULT, m_serverInformation);
+                d.read(CRC32 < OPENDAVINCI_CORE_STRINGLITERAL4('n', 'a', 'm', 'e') >::RESULT, m_moduleName);
 
                 return in;
+            }
+
+            const string DiscoverMessage::getModuleName() const {
+                return m_moduleName;
             }
 
             const string DiscoverMessage::toString() const {

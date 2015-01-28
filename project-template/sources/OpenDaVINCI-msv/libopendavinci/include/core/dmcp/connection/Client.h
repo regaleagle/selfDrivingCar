@@ -80,7 +80,19 @@ namespace core {
                     core::base::KeyValueConfiguration getConfiguration();
 
                     const core::data::dmcp::PulseMessage getPulseMessage();
+
+                    /**
+                     * This method sends the PulseAckMessage to supercomponent.
+                     */
                     void sendPulseAck();
+
+                    /**
+                     * This method sends the PulseAckMessage to supercomponent
+                     * including all containers to be sent from this component.
+                     *
+                     * @param listOfContainers List of containers to be sent.
+                     */
+                    void sendPulseAckContainers(const vector<core::data::Container> &listOfContainers);
 
                     void setSupercomponentStateListener(SupercomponentStateListener* listener);
 

@@ -20,6 +20,9 @@
 #ifndef OPENDAVINCI_DMCP_DISCOVER_SERVER_H_
 #define OPENDAVINCI_DMCP_DISCOVER_SERVER_H_
 
+#include <string>
+#include <vector>
+
 // core/platform.h must be included to setup platform-dependent header files and configurations.
 #include "core/platform.h"
 
@@ -55,7 +58,8 @@ namespace core {
 
             public:
                 Server(const ServerInformation& serverInformation,
-                       const std::string& group, const uint32_t serverPort, const uint32_t clientPort);
+                       const std::string& group, const uint32_t serverPort, const uint32_t clientPort,
+                       const vector<string> &modulesToIgnore);
                 virtual ~Server();
 
                 void startResponding();
@@ -66,12 +70,14 @@ namespace core {
             protected:
                 virtual void nextString(const string &s);
 
-                void sendResponseMessage();
+                void sendResponseMessage(const string &s);
 
                 core::wrapper::UDPSender* m_sender;
                 core::wrapper::UDPReceiver* m_receiver;
 
                 ServerInformation m_serverInformation;
+
+                vector<string> m_modulesToIgnore;
         };
     }
     }

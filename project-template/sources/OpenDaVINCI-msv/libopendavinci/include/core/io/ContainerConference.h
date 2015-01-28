@@ -67,6 +67,13 @@ namespace core {
                 virtual void setContainerListener(ContainerListener *cl);
 
                 /**
+                 * This methods returns the registered ContainerListener.
+                 *
+                 * @return registered container listener or NULL.
+                 */
+                ContainerListener* getContainerListener();
+
+                /**
                  * This methods sends a container to this conference.
                  *
                  * @param container Container to be sent.

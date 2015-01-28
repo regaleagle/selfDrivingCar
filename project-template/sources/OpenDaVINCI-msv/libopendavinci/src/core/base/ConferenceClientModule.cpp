@@ -36,28 +36,26 @@ namespace core {
 
         ConferenceClientModule::ConferenceClientModule(const int32_t &argc, char **argv, const string &name) throw (InvalidArgumentException, NoDatabaseAvailableException) :
                 ManagedClientModule(argc, argv, name),
-                m_conference(NULL),
                 m_dataStoresMutex(),
                 m_listOfDataStores(),
                 m_mapOfListOfDataStores(),
                 m_keyValueDataStore() {
             // Create an in-memory database.
             m_keyValueDataStore = SharedPointer<KeyValueDataStore>(new KeyValueDataStore(wrapper::KeyValueDatabaseFactory::createKeyValueDatabase("")));
-
-            // Create conference.
-            m_conference = ContainerConferenceFactory::getInstance().getContainerConference(getMultiCastGroup());
-            if (m_conference == NULL) {
+            ContainerConference *containerConference = ContainerConferenceFactory::getInstance().getContainerConference(getMultiCastGroup());
+            if (containerConference == NULL) {
                 OPENDAVINCI_CORE_THROW_EXCEPTION(InvalidArgumentException, "ContainerConference invalid!");
             }
+            setContainerConference(containerConference);
 
             // Register ourselves as ContainerListener.
-            m_conference->setContainerListener(this);
+            getContainerConference()->setContainerListener(this);
         }
 
         ConferenceClientModule::~ConferenceClientModule() {
-            m_conference->setContainerListener(NULL);
-
-            OPENDAVINCI_CORE_DELETE_POINTER(m_conference);
+            if (getContainerConference() != NULL) {
+                getContainerConference()->setContainerListener(NULL);
+            }
 
             // Database will be cleaned up by SharedPointer.
             {
@@ -102,7 +100,7 @@ namespace core {
         }
 
         ContainerConference& ConferenceClientModule::getConference() {
-            return *m_conference;
+            return *(getContainerConference());
         }
 
         void ConferenceClientModule::addDataStoreFor(AbstractDataStore &dataStore) {

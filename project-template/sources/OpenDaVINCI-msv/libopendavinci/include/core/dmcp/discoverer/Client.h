@@ -54,8 +54,9 @@ namespace core {
 
                 public:
                     Client(const std::string& group,
-                           const uint32_t serverPort,
-                           const uint32_t clientPort);
+                           const uint32_t &serverPort,
+                           const uint32_t &clientPort,
+                           const string &name);
                     virtual ~Client();
 
                     bool existsServer();
@@ -76,6 +77,7 @@ namespace core {
                     bool m_response;
 
                     ServerInformation m_serverInformation;
+                    string m_moduleName;
             };
         }
     }

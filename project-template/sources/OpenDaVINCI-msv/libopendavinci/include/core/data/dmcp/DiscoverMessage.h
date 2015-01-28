@@ -41,13 +41,14 @@ namespace core {
                     };
 
                     DiscoverMessage();
-                    DiscoverMessage(TYPE type);
+                    DiscoverMessage(TYPE type, const string &name);
                     DiscoverMessage(TYPE type, const core::dmcp::ServerInformation& serverInformation);
 
                     virtual ~DiscoverMessage();
 
                     TYPE getType() const;
                     const core::dmcp::ServerInformation getServerInformation() const;
+                    const string getModuleName() const;
 
                     virtual ostream& operator<<(ostream &out) const;
                     virtual istream& operator>>(istream &in);
@@ -57,6 +58,7 @@ namespace core {
                 private:
                     TYPE m_type;
                     core::dmcp::ServerInformation m_serverInformation;
+                    string m_moduleName;
             };
         }
     }

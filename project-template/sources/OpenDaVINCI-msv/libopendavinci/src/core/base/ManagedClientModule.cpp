@@ -1,6 +1,6 @@
 /**
  * OpenDaVINCI - Portable middleware for distributed components.
- * Copyright (C) 2008 - 2015 Christian Berger, Bernhard Rumpe
+ * Copyright (C) 2014 - 2015 Christian Berger
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,17 +47,43 @@ namespace core {
             m_profilingFile(NULL),
             m_firstCallToBreakpoint_ManagedLevel_Pulse(true),
             m_time(),
-            m_controlledTimeFactory(NULL) {}
+            m_controlledTimeFactory(NULL),
+            m_pulseMessage(),
+            m_localContainerConference(),
+            m_hasExternalContainerConference(false),
+            m_containerConference(NULL) {}
 
         ManagedClientModule::~ManagedClientModule() {
             if (m_profilingFile != NULL) {
                 m_profilingFile->flush();
                 m_profilingFile->close();
             }
+
+            if (m_hasExternalContainerConference) {
+                OPENDAVINCI_CORE_DELETE_POINTER(m_containerConference);
+                m_hasExternalContainerConference = false;
+            }
+
             OPENDAVINCI_CORE_DELETE_POINTER(m_profilingFile);
         }
 
         void ManagedClientModule::DMCPconnectionLost() {}
+
+        void ManagedClientModule::setContainerConference(core::io::ContainerConference *c) {
+            if (m_hasExternalContainerConference) {
+                OPENDAVINCI_CORE_DELETE_POINTER(m_containerConference);
+                m_hasExternalContainerConference = false;
+            }
+
+            if (c != NULL) {
+                m_containerConference = c;
+                m_hasExternalContainerConference = true;
+            }
+        }
+
+        core::io::ContainerConference* ManagedClientModule::getContainerConference() {
+            return m_containerConference;
+        }
 
         const TimeStamp ManagedClientModule::getStartOfCurrentCycle() const {
             return m_startOfCurrentCycle;
@@ -87,6 +113,10 @@ namespace core {
             if (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_PULSE_TIME_ACK) {
                 wait_ManagedLevel_Pulse_Time_Ack();
             }
+
+            if ( (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_SIMULATION) || (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_SIMULATION_RT) ) {
+                wait_ManagedLevel_Pulse_Time_Ack_Containers();
+            }
         }
 
         ModuleState::MODULE_EXITCODE ManagedClientModule::runModuleImplementation() {
@@ -110,6 +140,10 @@ namespace core {
                 return runModuleImplementation_ManagedLevel_Pulse_Time_Ack();
             }
 
+            if ( (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_SIMULATION) || (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_SIMULATION_RT) ) {
+                return runModuleImplementation_ManagedLevel_Pulse_Time_Ack_Containers();
+            }
+
             return ModuleState::OKAY;
         }
 
@@ -128,6 +162,10 @@ namespace core {
 
             if (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_PULSE_TIME_ACK) {
                 reached_ManagedLevel_Pulse_Time_Ack();
+            }
+
+            if ( (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_SIMULATION) || (getServerInformation().getManagedLevel() == core::dmcp::ServerInformation::ML_SIMULATION_RT) ) {
+                reached_ManagedLevel_Pulse_Time_Ack_Containers();
             }
         }
 
@@ -388,18 +426,18 @@ namespace core {
 
         void ManagedClientModule::reached_ManagedLevel_Pulse_Time() {
             // Get next PulseMessage. This call blocks until the next PulseMessage has been received.
-            const core::data::dmcp::PulseMessage pm = getDMCPClient()->getPulseMessage();
+            m_pulseMessage = getDMCPClient()->getPulseMessage();
 
             // Check whether our clock was already initialized (i.e. getSeconds() > 0).
             if (m_time.now().getSeconds() < 1) {
                 // Set seconds of our virtual clock to the clock from supercomponents.
-                m_time = context::base::Clock(pm.getRealtimeFromSupercomponent().getSeconds(), 0);
+                m_time = context::base::Clock(m_pulseMessage.getRealtimeFromSupercomponent().getSeconds(), 0);
             }
 
             // Increment the virtual time by the nominal value of the time slice
             // provided by from supercomponent. As PulseMessage provides this
             // value in microseconds, we need to convert to milliseconds.
-            const uint32_t INCREMENT_IN_MS = pm.getNominalTimeSlice()/1000.0;
+            const uint32_t INCREMENT_IN_MS = m_pulseMessage.getNominalTimeSlice()/1000.0;
             m_time.increment(INCREMENT_IN_MS);
 
             // Set the new system time in the TimeFactory.
@@ -483,8 +521,8 @@ namespace core {
             //
             // The ACK message will be sent in reached_ManagedLevel_Pulse_Time_Ack().
             //
-            // Thus, we simply call the overwritten implementation in from
-            // runModuleImplementation_ManagedLevel_Pulse_Time_Ack() here that
+            // Thus, we simply call the overwritten implementation from
+            // runModuleImplementation_ManagedLevel_Pulse_Time() here that
             // will replace the real time with a virtual time.
 
             return runModuleImplementation_ManagedLevel_Pulse_Time();
@@ -494,6 +532,100 @@ namespace core {
             // As the managed level ML_PULSE_TIME_ACK uses a breakpoint, the wait() method
             // will not be called at all. Thus, all profiling information needs to be
             // handled in reached_ManagedLevel_Pulse_Time_Ack().
+        }
+
+
+        ///////////////////////////////////////////////////////////////////////
+        // Implementation for ML_SIMULATION and ML_SIMULATION_RT (i.e. the
+        // execution of this module is suspended unless we receive the next pulse
+        // AND we need to deliver all containers to ourselves before we start the
+        // next iterator of the loop's body
+        // AND we need to confirm the processing of the currently received pulse
+        // AND we need to return all containers that we want to deliver to other
+        // modules in the NEXT cycle.
+        ///////////////////////////////////////////////////////////////////////
+
+        void ManagedClientModule::reached_ManagedLevel_Pulse_Time_Ack_Containers() {
+            // For a further explanation, please see runModuleImplementation_ManagedLevel_Pulse_Time_Ack_Containers().
+            //
+            // Here, we simply confirm that we have received AND processed
+            // our recently received pulse message.
+
+            // Confirm the successful processing of the received pulse and
+            // deliver all containers from this module to supercomponent.
+            if (getDMCPClient().isValid()) {
+                getDMCPClient()->sendPulseAckContainers(m_localContainerConference.getListOfContainers());
+
+                // After all containers have been delivered to supercomponent,
+                // reset the list of containers from the last iteration in our own
+                // ContainerConference before we initiate the next cycle.
+                m_localContainerConference.clearListOfContainers();
+            }
+
+            // Call reached_ManagedLevel_Pulse_Time() that will wait for the
+            // next pulse message.
+            reached_ManagedLevel_Pulse_Time();
+
+            // Deliver containers from last cycle before starting current cycle.
+            vector<Container> listOfContainersToBeDistributed = m_pulseMessage.getListOfContainers();
+            vector<Container>::iterator it = listOfContainersToBeDistributed.begin();
+            while (it != listOfContainersToBeDistributed.end()) {
+                Container c = *it;
+                c.setReceivedTimeStamp(TimeStamp());
+                m_localContainerConference.receiveFromLocal(c);
+                it++;
+            }
+
+            // When the program flow leaves this method, the next iteration
+            // in a program's while loop will start.
+        }
+
+        core::base::ModuleState::MODULE_EXITCODE ManagedClientModule::runModuleImplementation_ManagedLevel_Pulse_Time_Ack_Containers() {
+            // In managed level ML_SIMULATION and ML_SIMULATION_RT, supercomponent is
+            // continuously sending pulses but is awaiting for an acknowledgment
+            // for every successfully received pulse.
+            //
+            // We will send the acknowledgment for every pulse just before we are
+            // going to wait for the new one. Thus, we confirm the reception of
+            // a pulse AND confirm that we have done our algorithmic processing.
+            //
+            // Thereby, we can enforce a centralized deterministic scheduling by
+            // supercomponent that we only send the pulse to the next module when
+            // the previous module has be called and processed completely in its
+            // assigned time slice.
+            //
+            // The ACK message will be sent in reached_ManagedLevel_Pulse_Time_Ack_Containers().
+            //
+            // Futhermore, we will distribute any containers from the previous execution
+            // cycle to our nextContainer-listeners AND we will collect all
+            // containers to be distributed in return to supercomponent for
+            // distribution to all connected modules. Therefore, we need to disable
+            // any existing ContainerConference.
+
+            if (m_hasExternalContainerConference) {
+                if (m_containerConference != NULL) {
+                    m_localContainerConference.setContainerListener(m_containerConference->getContainerListener());
+                }
+
+                OPENDAVINCI_CORE_DELETE_POINTER(m_containerConference);
+                m_hasExternalContainerConference = false;
+
+                m_containerConference = &m_localContainerConference;
+
+                clog << "Existing ContainerConference disabled and ContainerListener redirected to localContainerConference." << endl;
+            }
+
+            // Now, we simply call the overwritten implementation from
+            // runModuleImplementation_ManagedLevel_Pulse_Time() here that
+            // will replace the real time with a virtual time.
+
+            return runModuleImplementation_ManagedLevel_Pulse_Time();
+        }
+
+        void ManagedClientModule::wait_ManagedLevel_Pulse_Time_Ack_Containers() {
+            // As the managed level ML_SIMULATION uses a breakpoint, the
+            // wait() method will not be called at all. Thus, all profiling information
+            // needs to be handled in reached_ManagedLevel_Pulse_Time_Ack().
         }
 
     }

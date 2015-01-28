@@ -26,6 +26,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "core/SharedPointer.h"
 #include "core/base/FIFOQueue.h"
@@ -203,11 +205,13 @@ class PlayerModuleTest : public CxxTest::TestSuite,
             m_configuration = KeyValueConfiguration();
             sstr >> m_configuration;
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
@@ -324,11 +328,13 @@ class PlayerModuleTest : public CxxTest::TestSuite,
             m_configuration = KeyValueConfiguration();
             sstr >> m_configuration;
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
@@ -457,11 +463,13 @@ class PlayerModuleTest : public CxxTest::TestSuite,
             m_configuration = KeyValueConfiguration();
             sstr >> m_configuration;
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
@@ -589,11 +597,13 @@ class PlayerModuleTest : public CxxTest::TestSuite,
             m_configuration = KeyValueConfiguration();
             sstr >> m_configuration;
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
@@ -734,11 +744,13 @@ class PlayerModuleTest : public CxxTest::TestSuite,
             m_configuration = KeyValueConfiguration();
             sstr >> m_configuration;
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);

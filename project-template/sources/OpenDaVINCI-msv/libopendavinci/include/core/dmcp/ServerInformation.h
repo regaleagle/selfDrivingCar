@@ -38,6 +38,8 @@ namespace core {
                         ML_PULSE_SHIFT,
                         ML_PULSE_TIME,
                         ML_PULSE_TIME_ACK,
+                        ML_SIMULATION_RT,
+                        ML_SIMULATION,
                     };
 
             public:

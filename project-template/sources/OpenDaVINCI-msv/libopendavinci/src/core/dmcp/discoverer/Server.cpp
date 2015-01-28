@@ -40,10 +40,12 @@ namespace core {
         Server::Server(const ServerInformation& serverInformation,
                        const std::string& group,
                        const uint32_t serverPort,
-                       const uint32_t clientPort ) :
+                       const uint32_t clientPort,
+                       const vector<string> &modulesToIgnore) :
                 m_sender(core::wrapper::UDPFactory::createUDPSender(group, clientPort)),
                 m_receiver(core::wrapper::UDPFactory::createUDPReceiver(group, serverPort)),
-                m_serverInformation(serverInformation)
+                m_serverInformation(serverInformation),
+                m_modulesToIgnore(modulesToIgnore)
         {
             m_receiver->start();
         }
@@ -65,15 +67,32 @@ namespace core {
 
                 if ( msg.getType() == DiscoverMessage::DISCOVER ) {
                     onRequest();
-                    sendResponseMessage();
+                    sendResponseMessage(msg.getModuleName());
                 }
             }
         }
 
-        void Server::sendResponseMessage() {
-            clog << "(DMCP-DiscovererServer) responding to DMCP_DISCOVER" << endl;
-            DiscoverMessage msg(DiscoverMessage::RESPONSE, m_serverInformation);
-            Container c = Container(Container::DMCP_DISCOVER, msg);
+        void Server::sendResponseMessage(const string &s) {
+            Container c;
+
+            // Check whether the connected module will receive the ordinary response from supercomponent
+            // or if we need to send the default response to bypass any managed_level configuration (e.g.
+            // for cockpit for example).
+            string s2(s);
+            transform(s2.begin(), s2.end(), s2.begin(), ::tolower);
+
+            vector<string>::iterator it = find(m_modulesToIgnore.begin(), m_modulesToIgnore.end(), s2);
+            if (it == m_modulesToIgnore.end()) {
+                clog << "(DMCP-DiscovererServer) responding to DMCP_DISCOVER" << endl;
+                DiscoverMessage msg(DiscoverMessage::RESPONSE, m_serverInformation);
+                c = Container(Container::DMCP_DISCOVER, msg);
+            }
+            else {
+                clog << "(DMCP-DiscovererServer) responding to DMCP_DISCOVER for module '" << s << "' excluded from managed level " << m_serverInformation.getManagedLevel() << endl;
+                ServerInformation si(m_serverInformation.getIP(), m_serverInformation.getPort(), ServerInformation::ML_NONE);
+                DiscoverMessage msg(DiscoverMessage::RESPONSE, si);
+                c = Container(Container::DMCP_DISCOVER, msg);
+            }
 
             stringstream ss;
             ss << c;

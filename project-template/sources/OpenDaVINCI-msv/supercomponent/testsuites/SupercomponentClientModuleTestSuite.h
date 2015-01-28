@@ -27,6 +27,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "core/SharedPointer.h"
 #include "core/base/ModuleState.h"
@@ -167,11 +169,13 @@ class SupercomponentClientModuleTest : public CxxTest::TestSuite,
             sstr >> _configuration;
             m_globaleConfigurationProvider = supercomponent::GlobalConfigurationProvider(_configuration);
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
@@ -246,11 +250,13 @@ class SupercomponentClientModuleTest : public CxxTest::TestSuite,
             sstr >> _configuration;
             m_globaleConfigurationProvider = supercomponent::GlobalConfigurationProvider(_configuration);
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
@@ -321,11 +327,13 @@ class SupercomponentClientModuleTest : public CxxTest::TestSuite,
             sstr >> _configuration;
             m_globaleConfigurationProvider = supercomponent::GlobalConfigurationProvider(_configuration);
 
+            vector<string> noModulesToIgnore;
             ServerInformation serverInformation("127.0.0.1", 19000);
             discoverer::Server dmcpDiscovererServer(serverInformation,
                                                     "225.0.0.100",
                                                     BROADCAST_PORT_SERVER,
-                                                    BROADCAST_PORT_CLIENT);
+                                                    BROADCAST_PORT_CLIENT,
+                                                    noModulesToIgnore);
             dmcpDiscovererServer.startResponding();
 
             connection::Server dmcpConnectionServer(serverInformation, *this);
