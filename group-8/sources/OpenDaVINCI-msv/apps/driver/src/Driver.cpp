@@ -88,11 +88,11 @@ namespace msv {
                 VehicleControl vc;
 
                 // With setSpeed you can set a desired speed for the vehicle in the range of -2.0 (backwards) .. 0 (stop) .. +2.0 (forwards)
-                vc.setSpeed(0.4);
+                vc.setSpeed(2);
 
                 // With setSteeringWheelAngle, you can steer in the range of -26 (left) .. 0 (straight) .. +25 (right)
-                double desiredSteeringWheelAngle = 4; // 4 degree but SteeringWheelAngle expects the angle in radians!
-                vc.setSteeringWheelAngle(desiredSteeringWheelAngle * Constants::DEG2RAD);
+                //double desiredSteeringWheelAngle = 4; // 4 degree but SteeringWheelAngle expects the angle in radians!
+                vc.setSteeringWheelAngle(sd.getHeadingData());
 
                 // You can also turn on or off various lights:
                 vc.setBrakeLights(false);

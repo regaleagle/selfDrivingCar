@@ -21,6 +21,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#include "core/data/Constants.h"
 #include "core/macros.h"
 #include "core/base/KeyValueConfiguration.h"
 #include "core/data/Container.h"
@@ -119,25 +120,54 @@ namespace msv {
         // Example: Show the image.
         if (m_debug) {
             if (m_image != NULL) {
-                cvShowImage("WindowShowImage", m_image);
+                cvShowImage("LaneDetector", m_image);
                 cvWaitKey(10);
             }
         }
 
         //TODO: Start here.
-
-
-        // 1. Do something with the image m_image here, for example: find lane marking features, optimize quality, ...
-
-
+		// 1. Do something with the image m_image here, for example: find lane marking features, optimize quality, ...
+        int x = m_image->width;
+     	int y = m_image->height;
+        //usually 8 
+        int step = m_image->widthStep;
+        //3: R, G, B
+        int channel = m_image->nChannels;
+        //pointer to aligned data
+        uchar* data = (uchar*)m_image->imageData;
+        
+      	int distance = 0;
+      	int critDistance = 250;
+      	//start from the middle point, goes furthest to the right edge
+      	for(int i = x/2; i<x; i++){
+      		int r = data[(y-50)*step + i*channel + 0];
+      		int g = data[(y-50)*step + i*channel + 1];
+      		int b = data[(y-50)*step + i*channel + 2];
+      		
+      		//cout << r << "rrr" << endl;
+      		//cout << g << "ggg" << endl;
+      		//cout << b << "bbb" << endl;
+      		if (r == 255 && g == 255 && b == 255)
+      			break;
+      		distance++;
+      		cout << distance << endl;
+      	}
+      	
+      	SteeringData sd;
 
         // 2. Calculate desired steering commands from your image features to be processed by driver.
-
+      	if (distance < critDistance - 2) {
+      		sd.setHeadingData(-Constants::PI/20);
+      	} else if (distance > critDistance + 2) {
+      		sd.setHeadingData(Constants::PI/20);
+      	} else {
+      		sd.setHeadingData(0.0);
+      	}
 
 
         // Here, you see an example of how to send the data structure SteeringData to the ContainerConference. This data structure will be received by all running components. In our example, it will be processed by Driver. To change this data structure, have a look at Data.odvd in the root folder of this source.
-        SteeringData sd;
-        sd.setExampleData(1234.56);
+        
+        //sd.setExampleData(1234.56);
 
         // Create container for finally sending the data.
         Container c(Container::USER_DATA_1, sd);
