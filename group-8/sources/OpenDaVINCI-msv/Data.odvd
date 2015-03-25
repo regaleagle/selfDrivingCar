@@ -19,8 +19,8 @@
 
 message msv.SteeringData {
     double exampleData;
-    double heading;
-    double speed;
+    double headingData;
+    double speedData;
 }
 
 message msv.UserButtonData {
