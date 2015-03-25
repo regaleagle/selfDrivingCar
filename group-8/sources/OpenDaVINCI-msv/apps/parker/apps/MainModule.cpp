@@ -1,6 +1,6 @@
-/*
- * Data.odvd - Data structures for miniature cars.
- * Copyright (C) 2015 Christian Berger 
+/**
+ * driver - Sample application for calculating steering and acceleration commands.
+ * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,24 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-message msv.SteeringData {
-    double exampleData;
-    double heading;
-    double speed;
-}
+#include "Parker.h"
 
-message msv.UserButtonData {
-    enum ButtonStatus {
-        UNDEFINED = -1,
-        RELEASED = 0,
-        PRESSED = 1,
-    };
-    ButtonStatus buttonStatus;
-    double duration;
+int32_t main(int32_t argc, char **argv) {
+    msv::Parker p(argc, argv);
+    return p.runModule();
 }
-
-message msv.SensorBoardData {
-    uint32 numberOfSensors;
-    map<uint32, double> distances;
-}
-
