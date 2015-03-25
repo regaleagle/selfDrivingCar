@@ -100,7 +100,7 @@ namespace msv {
                 switch (mode) {
 
                         case SCANNING:
-                        sd.setSpeed(1);
+                        sd.setSpeedData(1);
                         if(distanceBackRight < 0){
                                 mode = MEASURING;
                                 currentTraveledPath = vd.getAbsTraveledPath();
@@ -108,10 +108,10 @@ namespace msv {
                         break;
 
                         case MEASURING:
-                        sd.setSpeed(1);
+                        sd.setSpeedData(1);
                         
                         if(distanceBackRight > -1 && (absTraveledPath - currentTraveledPath) < 7){
-                                sd.setSpeed(0);
+                                sd.setSpeedData(0);
                                 mode = SCANNING;
                         }
                         else if ((absTraveledPath - currentTraveledPath) >= 7){
@@ -121,8 +121,8 @@ namespace msv {
                         break;
 
                         case BACK_RIGHT:
-                        sd.setSpeed(-0.5);
-                        sd.setHeading(20 * Constants::DEG2RAD);
+                        sd.setSpeedData(-0.5);
+                        sd.setHeadingData(20 * Constants::DEG2RAD);
                         if ((absTraveledPath - currentTraveledPath) > 6.5){
                                 mode = BACK_LEFT;
                                 currentTraveledPath = absTraveledPath;
@@ -131,10 +131,10 @@ namespace msv {
                         break;
 
                         case BACK_LEFT:
-                        sd.setSpeed(-0.5);
-                        sd.setHeading(-26 * Constants::DEG2RAD);
+                        sd.setSpeedData(-0.5);
+                        sd.setHeadingData(-26 * Constants::DEG2RAD);
                         if((absTraveledPath - currentTraveledPath) > 4){
-                                sd.setSpeed(0);
+                                sd.setSpeedData(0);
                                 currentTraveledPath = absTraveledPath;
                                 mode = STRAIGHTEN;
                         }
@@ -142,22 +142,22 @@ namespace msv {
                         break;
 
                         case STRAIGHTEN:
-                        sd.setHeading(10);
-                        sd.setSpeed(0.5);
+                        sd.setHeadingData(10);
+                        sd.setSpeedData(0.5);
                         if(absTraveledPath - currentTraveledPath > 1.3)
                                 mode = STOP;
 
                         break;
 
                         case ALIGNING:
-                        sd.setSpeed(0.5);
+                        sd.setSpeedData(0.5);
                         if((absTraveledPath - currentTraveledPath) > 3)
                                 mode = STOPPING;
                         
                         break;
 
                         case STOPPING:
-                        sd.setSpeed(0);
+                        sd.setSpeedData(0);
                         if(vd.getSpeed() < 0.01){
                                 mode = BACK_RIGHT;
                                 currentTraveledPath = absTraveledPath;
@@ -166,7 +166,7 @@ namespace msv {
                         break;
 
                         case STOP:
-                        sd.setSpeed(0);
+                        sd.setSpeedData(0);
                         break;
 
                 }
