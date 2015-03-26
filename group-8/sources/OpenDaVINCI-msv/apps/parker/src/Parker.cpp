@@ -96,11 +96,14 @@ namespace msv {
                 // Design your control algorithm here depending on the input data from above.
                 distanceBackRight = sbd.getValueForKey_MapOfDistances(2);
                 absTraveledPath = vd.getAbsTraveledPath();
+
+                // Create vehicle control data.
+                VehicleControl vc;
                 
                 switch (mode) {
 
                         case SCANNING:
-                        sd.setSpeedData(1);
+                        vc.setSpeed(1);
                         if(distanceBackRight < 0){
                                 mode = MEASURING;
                                 currentTraveledPath = vd.getAbsTraveledPath();
@@ -108,10 +111,10 @@ namespace msv {
                         break;
 
                         case MEASURING:
-                        sd.setSpeedData(1);
+                        vc.setSpeed(1);
                         
                         if(distanceBackRight > -1 && (absTraveledPath - currentTraveledPath) < 7){
-                                sd.setSpeedData(0);
+                                vc.setSpeed(0);
                                 mode = SCANNING;
                         }
                         else if ((absTraveledPath - currentTraveledPath) >= 7){
@@ -121,8 +124,8 @@ namespace msv {
                         break;
 
                         case BACK_RIGHT:
-                        sd.setSpeedData(-0.5);
-                        sd.setHeadingData(20 * Constants::DEG2RAD);
+                        vc.setSpeed(-0.5);
+                        vc.setSteeringWheelAngle(20 * Constants::DEG2RAD);
                         if ((absTraveledPath - currentTraveledPath) > 6.5){
                                 mode = BACK_LEFT;
                                 currentTraveledPath = absTraveledPath;
@@ -131,10 +134,10 @@ namespace msv {
                         break;
 
                         case BACK_LEFT:
-                        sd.setSpeedData(-0.5);
-                        sd.setHeadingData(-26 * Constants::DEG2RAD);
+                        vc.setSpeed(-0.5);
+                        vc.setSteeringWheelAngle(-26 * Constants::DEG2RAD);
                         if((absTraveledPath - currentTraveledPath) > 4){
-                                sd.setSpeedData(0);
+                                vc.setSpeed(0);
                                 currentTraveledPath = absTraveledPath;
                                 mode = STRAIGHTEN;
                         }
@@ -142,22 +145,22 @@ namespace msv {
                         break;
 
                         case STRAIGHTEN:
-                        sd.setHeadingData(10);
-                        sd.setSpeedData(0.5);
+                        vc.setSteeringWheelAngle(10);
+                        vc.setSpeed(0.5);
                         if(absTraveledPath - currentTraveledPath > 1.3)
                                 mode = STOP;
 
                         break;
 
                         case ALIGNING:
-                        sd.setSpeedData(0.5);
+                        vc.setSpeed(0.5);
                         if((absTraveledPath - currentTraveledPath) > 3)
                                 mode = STOPPING;
                         
                         break;
 
                         case STOPPING:
-                        sd.setSpeedData(0);
+                        vc.setSpeed(0);
                         if(vd.getSpeed() < 0.01){
                                 mode = BACK_RIGHT;
                                 currentTraveledPath = absTraveledPath;
@@ -166,7 +169,7 @@ namespace msv {
                         break;
 
                         case STOP:
-                        sd.setSpeedData(0);
+                        vc.setSpeed(0);
                         break;
 
                 }
@@ -180,7 +183,7 @@ namespace msv {
                 cerr << " Sensor 5 US Rear-Right: " << sbd.getValueForKey_MapOfDistances(5) << endl;
 
                 // Create container for finally sending the data.
-                Container c(Container::USER_DATA_1, sd);
+                Container c(Container::VEHICLECONTROL, vc);
                 // Send container.
                 getConference().send(c);
 	        }
