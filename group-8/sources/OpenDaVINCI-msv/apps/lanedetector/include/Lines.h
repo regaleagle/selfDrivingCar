@@ -5,13 +5,8 @@
 
     class Lines{
         public:
-	        /**
-	         * Constructor.
-	         *
-	         * @param argc Number of command line arguments.
-	         * @param argv Command line arguments.
-	         */
-	        Lines(double x, double y);
+	       
+	        Lines(double x, double y, double crit);
 
 	        double getXPos();
 	        double getYPos();

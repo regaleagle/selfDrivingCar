@@ -22,7 +22,7 @@ void Lines::setXPos(double x)
 	xPos = x;
 }
 
-double getCritical()
+double Lines::getCritical()
 {
 	return critical;
 }

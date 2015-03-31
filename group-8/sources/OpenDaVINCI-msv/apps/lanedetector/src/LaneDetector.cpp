@@ -40,7 +40,7 @@
 
 double measureDistance(int yPos, int dir, IplImage* image);
 double measureAngle(int yPos1, int xPos1, int yPos2, int xPos2);
-std::vector<Lines> validateLines(std::vector<Lines>* lines);
+std::vector<Lines> validateLines(std::vector<Lines> lines);
 
 
 namespace msv {
@@ -134,12 +134,6 @@ namespace msv {
       Lines leftLine3(0, 130, 163);
       Lines leftLine4(0, 150, 170);
 
-      int critRight1 = 250;
-      int critRight2 = 63;
-      //int critLeft1 = 120;
-      //int critLeft2 = 140;
-      //int critLeft3 = 163;
-
       rightLine1.setXPos(measureDistance(50, 1, m_image));
       rightLine2.setXPos(measureDistance(70, 1, m_image));
       rightLine3.setXPos(measureDistance(245, 1, m_image));
@@ -161,9 +155,9 @@ namespace msv {
 
       if(rightLine1.getXPos() > 270 && rightLine2.getXPos() > 270 && leftLine1.getXPos() > 270 && leftLine2.getXPos() > 270)
       {
-       if (rightLine3.getXPos() < critRight2 - 2) {
+       if (rightLine3.getXPos() < rightLine3.getCritical() - 2) {
             sd.setHeadingData(-measureAngle(m_image->height - 255, rightLine4.getXPos(), m_image->height - 245, rightLine3.getXPos()));
-          } else if (rightLine3.getXPos() > critRight2 + 2) {
+          } else if (rightLine3.getXPos() > rightLine3.getCritical() + 2) {
             sd.setHeadingData(measureAngle(m_image->height - 255, rightLine4.getXPos(), m_image->height - 245, rightLine3.getXPos()));
           } else {
             sd.setHeadingData(0.0);
@@ -171,19 +165,19 @@ namespace msv {
       }else if (rightLine1.getXPos() > 270 && rightLine2.getXPos() > 270)
       {
         vector<Lines> valid = validateLines(leftList);
-        if (valid.begin().getXPos() <  - 2) {
-            sd.setHeadingData(-measureAngle(m_image->height - 255, rightLine4.getXPos(), m_image->height - 245, rightLine3.getXPos()));
-          } else if (rightLine3.getXPos() > critRight2 + 2) {
-            sd.setHeadingData(measureAngle(m_image->height - 255, rightLine4.getXPos(), m_image->height - 245, rightLine3.getXPos()));
+        if (valid.begin()->getXPos() < valid.begin()->getCritical() - 2) {
+            sd.setHeadingData(-measureAngle(m_image->height - valid.end()->getYPos(), valid.end()->getXPos(), m_image->height - valid.begin()->getYPos(), valid.begin()->getXPos()));
+          } else if (valid.begin()->getXPos() > valid.begin()->getCritical() + 2) {
+            sd.setHeadingData(measureAngle(m_image->height - valid.end()->getYPos(), valid.end()->getXPos(), m_image->height - valid.begin()->getYPos(), valid.begin()->getXPos()));
           } else {
             sd.setHeadingData(0.0);
           }
          
       }else
       {
-        if (rightLine1.getXPos() < critRight1 - 2) {
+        if (rightLine1.getXPos() < rightLine1.getCritical() - 2) {
             sd.setHeadingData(-measureAngle(m_image->height - 70, rightLine2.getXPos(), m_image->height - 50, rightLine1.getXPos()));
-          } else if (rightLine1.getXPos() > critRight1 + 2) {
+          } else if (rightLine1.getXPos() > rightLine1.getCritical() + 2) {
             sd.setHeadingData(measureAngle(m_image->height - 70, rightLine2.getXPos(), m_image->height - 50, rightLine1.getXPos()));
           } else {
             sd.setHeadingData(0.0);
@@ -267,6 +261,8 @@ namespace msv {
 
 } // msv
 
+
+// Takes a vector of the lines, create an iterator which iterates through the vector and checks if the x possition is valid. If it is it will add it to the new vector. Repeat until there are no more lines in the vector, or if j is greater or equal to 2. Meaning we have two valid lines.
 std::vector<Lines> validateLines(std::vector<Lines> lines)
 {
   std::vector<Lines> line;
