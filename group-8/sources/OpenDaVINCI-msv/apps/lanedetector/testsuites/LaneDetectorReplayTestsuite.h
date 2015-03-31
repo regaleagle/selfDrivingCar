@@ -39,6 +39,7 @@
 #include "vehiclecontext/VehicleRuntimeControl.h"
 
 #include "../include/LaneDetector.h"
+#include "../include/Lines.h"
 
 using namespace std;
 using namespace core::base;

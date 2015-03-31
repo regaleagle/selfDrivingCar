@@ -25,6 +25,8 @@
 #include "core/base/ConferenceClientModule.h"
 #include "core/wrapper/SharedMemory.h"
 
+#include "Lines.h"
+
 namespace msv {
 
     using namespace std;
@@ -44,7 +46,7 @@ namespace msv {
 	        LaneDetector(const LaneDetector &/*obj*/);
 
 	        /**
-	         * "Forbidden" assignment operator. Goal: The compiler should warn
+	         * "Forbidden" a ssignment operator. Goal: The compiler should warn
 	         * already at compile time for unwanted bugs caused by any misuse
 	         * of the assignment operator.
 	         *
