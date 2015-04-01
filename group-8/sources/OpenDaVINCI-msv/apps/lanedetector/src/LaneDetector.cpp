@@ -129,8 +129,8 @@ namespace msv {
       Lines rightLine3(0, 245, 63);
       Lines rightLine4(0, 255, 0);
 
-      Lines leftLine1(0, 50, 125);
-      Lines leftLine2(0, 70, 120);
+      Lines leftLine1(0, 90, 125);
+      Lines leftLine2(0, 110, 120);
       Lines leftLine3(0, 130, 163);
       Lines leftLine4(0, 150, 170);
 
@@ -138,10 +138,12 @@ namespace msv {
       rightLine2.setXPos(measureDistance(70, 1, m_image));
       rightLine3.setXPos(measureDistance(245, 1, m_image));
       rightLine4.setXPos(measureDistance(255, 1, m_image));
-      leftLine1.setXPos(measureDistance(50, 0, m_image));
-      leftLine2.setXPos(measureDistance(70, 0, m_image));
+      leftLine1.setXPos(measureDistance(90, 0, m_image));
+      leftLine2.setXPos(measureDistance(110, 0, m_image));
       leftLine3.setXPos(measureDistance(130, 0, m_image));
       leftLine4.setXPos(measureDistance(150, 0, m_image));
+
+      std::cout << "rightline 1 " << rightLine1.getXPos() << "\n rightLine2 " << rightLine2.getXPos() << std::endl;
 
       vector<Lines> leftList;
       leftList.push_back(leftLine1);
@@ -155,6 +157,7 @@ namespace msv {
 
       if(rightLine1.getXPos() > 270 && rightLine2.getXPos() > 270 && leftLine1.getXPos() > 270 && leftLine2.getXPos() > 270)
       {
+        std::cout << "state 1" << std::endl;
        if (rightLine3.getXPos() < rightLine3.getCritical() - 2) {
             sd.setHeadingData(-measureAngle(m_image->height - 255, rightLine4.getXPos(), m_image->height - 245, rightLine3.getXPos()));
           } else if (rightLine3.getXPos() > rightLine3.getCritical() + 2) {
@@ -164,6 +167,7 @@ namespace msv {
           }
       }else if (rightLine1.getXPos() > 270 && rightLine2.getXPos() > 270)
       {
+        std::cout << "state 2" << std::endl;
         vector<Lines> valid = validateLines(leftList);
         if (valid.begin()->getXPos() < valid.begin()->getCritical() - 2) {
             sd.setHeadingData(-measureAngle(m_image->height - valid.end()->getYPos(), valid.end()->getXPos(), m_image->height - valid.begin()->getYPos(), valid.begin()->getXPos()));
@@ -175,6 +179,7 @@ namespace msv {
          
       }else
       {
+        std::cout << "state 3" << std::endl;
         if (rightLine1.getXPos() < rightLine1.getCritical() - 2) {
             sd.setHeadingData(-measureAngle(m_image->height - 70, rightLine2.getXPos(), m_image->height - 50, rightLine1.getXPos()));
           } else if (rightLine1.getXPos() > rightLine1.getCritical() + 2) {
@@ -326,7 +331,7 @@ double measureDistance(int yPos, int dir, IplImage* image) {
       
       //std::cout << distance << std::endl;
     }
-    line(newImage, ptMiddle, ptRight, cvScalar(30,105,210), 3, 8);
+    line(newImage, ptMiddle, ptRight, cvScalar(127,255,0), 3, 8);
 
   } else {
     for(i = x/2; i>0; i--){
@@ -342,7 +347,7 @@ double measureDistance(int yPos, int dir, IplImage* image) {
       //std::cout << i << " cake " << std::endl;
       //std::cout << distance << std::endl;
     }
-    line(newImage, ptMiddle, ptLeft, cvScalar(63,133,205), 3, 8);
+    line(newImage, ptMiddle, ptLeft, cvScalar(139,0,139), 3, 8);
   }
   return distance;
 }
