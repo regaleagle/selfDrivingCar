@@ -134,6 +134,10 @@ namespace msv {
       Lines leftLine3(0, 130, 163);
       Lines leftLine4(0, 150, 170);
 
+      int upDis1, upDis2;
+      upDis1=measureDistance(270, 2, m_image);
+      upDis2=measureDistance(320, 2, m_image);
+      std::cout<< upDis1<<"updis1!!!" <<upDis2<<"updis2!!!!"<<std::endl;
       rightLine1.setXPos(measureDistance(50, 1, m_image));
       rightLine2.setXPos(measureDistance(70, 1, m_image));
       rightLine3.setXPos(measureDistance(245, 1, m_image));
@@ -307,14 +311,20 @@ double measureDistance(int yPos, int dir, IplImage* image) {
   //pointer to aligned data
   uchar* data = (uchar*)image->imageData;
   
-  cv::Mat newImage = cv::cvarrToMat(image);
+   cv::Mat newImage = cv::cvarrToMat(image);
   cv::Point ptMiddle;
   cv::Point ptRight;
   cv::Point ptLeft;
+  cv::Point ptDown;
+  cv::Point ptUp;
   ptMiddle.x = x/2;
   ptMiddle.y = y-yPos;
   ptRight.y = y-yPos;
   ptLeft.y = y-yPos;
+  //the argument yPos is xPos for ptDown
+  ptDown.x = yPos;
+  ptDown.y = y;
+  ptUp.x = yPos;
   
   if (dir == 1){
     for(i = x/2; i<x; i++){
@@ -333,7 +343,7 @@ double measureDistance(int yPos, int dir, IplImage* image) {
     }
     line(newImage, ptMiddle, ptRight, cvScalar(127,255,0), 3, 8);
 
-  } else {
+  } else if (dir==0){
     for(i = x/2; i>0; i--){
       int r = data[(y-yPos)*step + i*channel + 0];
       int g = data[(y-yPos)*step + i*channel + 1];
@@ -348,6 +358,23 @@ double measureDistance(int yPos, int dir, IplImage* image) {
       //std::cout << distance << std::endl;
     }
     line(newImage, ptMiddle, ptLeft, cvScalar(139,0,139), 3, 8);
-  }
+  }else {
+  	for(i = y; i> 0; i++){
+      int r = data[(y-yPos)*step + i*channel + 0];
+      int g = data[(y-yPos)*step + i*channel + 1];
+      int b = data[(y-yPos)*step + i*channel + 2];
+          
+      if (r == 255 && g == 255 && b == 255){
+        ptLeft.y = y-i;
+        break;
+      }
+      distance++;
+      //std::cout << i << " cake " << std::endl;
+      //std::cout << distance << std::endl;
+    }
+    if(distance < y-20){
+    line(newImage, ptDown, ptUp, cvScalar(0,133,0), 1, 8);
+	}
+}
   return distance;
 }
