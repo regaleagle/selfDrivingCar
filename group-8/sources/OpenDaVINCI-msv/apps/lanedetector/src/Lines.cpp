@@ -21,7 +21,10 @@ void Lines::setXPos(double x)
 {
 	xPos = x;
 }
-
+void Lines::setYPos(double y)
+{
+	yPos = y;
+}
 double Lines::getCritical()
 {
 	return critical;

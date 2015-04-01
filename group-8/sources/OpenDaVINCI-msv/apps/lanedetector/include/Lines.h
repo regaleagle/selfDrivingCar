@@ -11,6 +11,7 @@
 	        double getXPos();
 	        double getYPos();
 	        void setXPos(double x);
+	        void setYPos(double y);
 	        double getCritical();
 
         private:
