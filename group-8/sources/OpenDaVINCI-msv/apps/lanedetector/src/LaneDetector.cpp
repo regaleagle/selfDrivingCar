@@ -133,11 +133,19 @@ namespace msv {
       Lines leftLine2(0, 110, 120);
       Lines leftLine3(0, 130, 163);
       Lines leftLine4(0, 150, 170);
+      Lines upLine1(270, 0, 100);
+      Lines upLine2(320, 0, 100);
+      upLine1.setYPos(measureDistance(270, 2, m_image));
+      upLine2.setYPos(measureDistance(320, 2, m_image));
+      std::cout << "Upline 1 " << upLine1.getYPos() << "\n UpLine2 " << upLine2.getYPos()  << std::endl;
+      std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
+      std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
 
-      int upDis1, upDis2;
-      upDis1=measureDistance(270, 2, m_image);
-      upDis2=measureDistance(320, 2, m_image);
-      std::cout<< upDis1<<"updis1!!!" <<upDis2<<"updis2!!!!"<<std::endl;
+      //int upDis1, upDis2;
+      // upDis1=measureDistance(270, 2, m_image);
+      // upDis2=measureDistance(320, 2, m_image);
+      // std::cout<< upDis1<<"updis1!!!" <<upDis2<<"updis2!!!!"<<std::endl;
+
       rightLine1.setXPos(measureDistance(50, 1, m_image));
       rightLine2.setXPos(measureDistance(70, 1, m_image));
       rightLine3.setXPos(measureDistance(245, 1, m_image));
@@ -359,22 +367,22 @@ double measureDistance(int yPos, int dir, IplImage* image) {
     }
     line(newImage, ptMiddle, ptLeft, cvScalar(139,0,139), 3, 8);
   }else {
-  	for(i = y; i> 0; i++){
-      int r = data[(y-yPos)*step + i*channel + 0];
-      int g = data[(y-yPos)*step + i*channel + 1];
-      int b = data[(y-yPos)*step + i*channel + 2];
+  	for(i = 0; i< y-1; i++){
+      int r = data[step*(y-1)+ yPos*channel + 0 -i*step];
+      int g = data[step*(y-1)+ yPos*channel + 1 -i*step];
+      int b = data[step*(y-1)+ yPos*channel + 2 -i*step];
           
       if (r == 255 && g == 255 && b == 255){
-        ptLeft.y = y-i;
+        ptUp.y = y-i;
         break;
       }
       distance++;
       //std::cout << i << " cake " << std::endl;
       //std::cout << distance << std::endl;
     }
-    if(distance < y-20){
+    
     line(newImage, ptDown, ptUp, cvScalar(0,133,0), 1, 8);
-	}
+	
 }
   return distance;
 }
