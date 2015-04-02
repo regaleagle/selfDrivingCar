@@ -23,6 +23,22 @@ message msv.SteeringData {
     double speedData;
 }
 
+message msv.LaneData {
+    int rightLine1;
+    int rightLine2;
+    int rightLine3;
+    int rightLine4;
+
+    int leftLine1;
+    int leftLine2;
+    int leftLine3;
+    int leftLine4;
+
+    int upLine1;
+    int upLine2;
+
+}
+
 message msv.UserButtonData {
     enum ButtonStatus {
         UNDEFINED = -1,
