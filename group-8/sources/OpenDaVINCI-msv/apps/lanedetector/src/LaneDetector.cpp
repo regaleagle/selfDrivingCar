@@ -129,31 +129,23 @@ namespace msv {
       Lines rightLine3(0, 245, 63);
       Lines rightLine4(0, 255, 0);
 
-      Lines leftLine1(0, 90, 125);
-      Lines leftLine2(0, 110, 120);
-      Lines leftLine3(0, 130, 163);
-      Lines leftLine4(0, 150, 170);
-      Lines upLine1(270, 0, 100);
-      Lines upLine2(320, 0, 100);
-      upLine1.setYPos(measureDistance(270, 2, m_image));
-      upLine2.setYPos(measureDistance(320, 2, m_image));
-     // std::cout << "Upline 1 " << upLine1.getYPos() << "\n UpLine2 " << upLine2.getYPos()  << std::endl;
-      //std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
-      //std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
+      Lines leftLine1(0, 90, 214);
+      Lines leftLine2(0, 115, 190);
+      Lines leftLine3(0, 140, 167);
+      Lines leftLine4(0, 165, 144);
 
-      //int upDis1, upDis2;
-      // upDis1=measureDistance(270, 2, m_image);
-      // upDis2=measureDistance(320, 2, m_image);
-      // std::cout<< upDis1<<"updis1!!!" <<upDis2<<"updis2!!!!"<<std::endl;
+
+      upline1.setYPos(measureDistance(100, 2, m_image));
+      upline2.setYPos(measureDistance(150, 2, m_image));
 
       rightLine1.setXPos(measureDistance(50, 1, m_image));
       rightLine2.setXPos(measureDistance(70, 1, m_image));
       rightLine3.setXPos(measureDistance(245, 1, m_image));
       rightLine4.setXPos(measureDistance(255, 1, m_image));
       leftLine1.setXPos(measureDistance(90, 0, m_image));
-      leftLine2.setXPos(measureDistance(110, 0, m_image));
-      leftLine3.setXPos(measureDistance(130, 0, m_image));
-      leftLine4.setXPos(measureDistance(150, 0, m_image));
+      leftLine2.setXPos(measureDistance(115, 0, m_image));
+      leftLine3.setXPos(measureDistance(140, 0, m_image));
+      leftLine4.setXPos(measureDistance(165, 0, m_image));
 
       //std::cout << "rightline 1 " << rightLine1.getXPos() << "\n rightLine2 " << rightLine2.getXPos() << std::endl;
 
