@@ -1,6 +1,8 @@
 # 2015-mini-smart-vehicles
 
-##Instructions for cross-compiling from an Ubuntu linux machine. First up set yourself up a keypair
+##Instructions for cross-compiling from an Ubuntu linux machine. 
+
+First up set yourself up a keypair
 
 [https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2)
 
