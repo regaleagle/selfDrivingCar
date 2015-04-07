@@ -137,9 +137,9 @@ namespace msv {
       Lines upLine2(320, 0, 100);
       upLine1.setYPos(measureDistance(270, 2, m_image));
       upLine2.setYPos(measureDistance(320, 2, m_image));
-      std::cout << "Upline 1 " << upLine1.getYPos() << "\n UpLine2 " << upLine2.getYPos()  << std::endl;
-      std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
-      std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
+     // std::cout << "Upline 1 " << upLine1.getYPos() << "\n UpLine2 " << upLine2.getYPos()  << std::endl;
+      //std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
+      //std::cout << "Upline 1 " << upLine1.getYPos() << "\n UPLine2 " << upLine2.getYPos() << std::endl;
 
       //int upDis1, upDis2;
       // upDis1=measureDistance(270, 2, m_image);
@@ -155,14 +155,13 @@ namespace msv {
       leftLine3.setXPos(measureDistance(130, 0, m_image));
       leftLine4.setXPos(measureDistance(150, 0, m_image));
 
-      std::cout << "rightline 1 " << rightLine1.getXPos() << "\n rightLine2 " << rightLine2.getXPos() << std::endl;
+      //std::cout << "rightline 1 " << rightLine1.getXPos() << "\n rightLine2 " << rightLine2.getXPos() << std::endl;
 
       vector<Lines> leftList;
       leftList.push_back(leftLine1);
       leftList.push_back(leftLine2);
       leftList.push_back(leftLine3);
       leftList.push_back(leftLine4);
-
 
       SteeringData sd;
       sd.setSpeedData(2);
@@ -319,7 +318,7 @@ double measureDistance(int yPos, int dir, IplImage* image) {
   //pointer to aligned data
   uchar* data = (uchar*)image->imageData;
   
-   cv::Mat newImage = cv::cvarrToMat(image);
+  cv::Mat newImage = cv::cvarrToMat(image);
   cv::Point ptMiddle;
   cv::Point ptRight;
   cv::Point ptLeft;
