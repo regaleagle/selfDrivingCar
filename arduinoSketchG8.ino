@@ -6,7 +6,7 @@ const byte startByte = 's';
 //----Incoming Data ----
 byte recSignal[8];         // a byte array to hold incoming data
 int speedIn = 0;               //incoming speed data
-int steeringIn = 0;            //incoming steering data
+int steeringIn = 90;            //incoming steering data
 //byte lightsIn = 0;
 boolean recComplete = false; //Check if valid packet
 
